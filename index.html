@@ -59,6 +59,11 @@
         @keyframes loadProgress { to { width: 100%; } }
         .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+.card { display: flex; transition: 0.3s; } /* Pastikan sudah ada */
+@media screen and (max-width: 600px) {
+    .container { padding: 10px; }
+}
+
         /* --- UI COMPONENTS --- */
         header { 
             background: var(--gradient-emerald); color: white; padding: 25px 15px; 
@@ -124,7 +129,7 @@
 
 <header>
     <button class="theme-btn" onclick="toggleTheme()">🌓</button>
-    <div class="header-title"><h3 style="margin:0;">Al-Qur'an Digital</h3></div>
+    <div class="header-title"><h3 style="margin:0;">Al-Qur'an Mobile</h3></div>
 </header>
 
 <div id="top-info-section">
@@ -138,7 +143,7 @@
 <nav class="bottom-nav">
     <div class="nav-item active" id="nav-0" onclick="showHome()"><span>🏠</span>Home</div>
     <div class="nav-item" id="nav-1" onclick="showCariAyat()"><span>🔍</span>Cari Ayat</div>
-    <div class="nav-item" id="nav-2" onclick="loadJadwalSholat()"><span>🕌</span>Sholat</div>
+    <div class="nav-item" id="nav-2" onclick="loadJadwalPuasa()"><span>🕌</span>Jadwal puasa</div>
     <div class="nav-item" id="nav-3" onclick="showMenuLainnya()"><span>☰</span>Lainnya</div>
 </nav>
 
@@ -435,6 +440,60 @@ async function liveSearch(query) {
     function updateActiveNav(n) {
         document.querySelectorAll('.nav-item').forEach((item, i) => item.classList.toggle('active', i === n));
     }
+    
+async function loadJadwalPuasa() {
+    updateActiveNav(2); // Menggunakan tab Sholat/Ibadah
+    const area = document.getElementById('app-content');
+    area.innerHTML = `<div style="text-align:center; padding:50px;">Mendeteksi lokasi untuk jadwal puasa...</div>`;
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const date = new Date().getDate();
+            const month = new Date().getMonth() + 1;
+            const year = new Date().getFullYear();
+
+            try {
+                const res = await fetch(`https://api.aladhan.com/v1/timings/${date}-${month}-${year}?latitude=${lat}&longitude=${lng}&method=11`);
+                const data = await res.json();
+                const timings = data.data.timings;
+
+                area.innerHTML = `
+                    <div class="container">
+                        <div class="card" style="background:var(--gradient-emerald); color:white; text-align:center; border-left:none; padding:25px;">
+                            <h2 style="margin:0; font-family:'Amiri';">Jadwal Puasa Hari Ini</h2>
+                            <p style="opacity:0.8; font-size:14px;">${data.data.date.readable}</p>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
+                            <div class="card" style="display:block; text-align:center; border-bottom:4px solid var(--primary);">
+                                <small style="color:var(--primary); font-weight:bold;">IMSAK</small>
+                                <h1 style="margin:10px 0; font-size:32px;">${timings.Imsak}</h1>
+                                <p style="font-size:11px; opacity:0.6;">Waktu Niat & Sahur</p>
+                            </div>
+                            <div class="card" style="display:block; text-align:center; border-bottom:4px solid var(--secondary);">
+                                <small style="color:var(--secondary); font-weight:bold;">BUKA PUASA</small>
+                                <h1 style="margin:10px 0; font-size:32px;">${timings.Maghrib}</h1>
+                                <p style="font-size:11px; opacity:0.6;">Waktu Maghrib</p>
+                            </div>
+                        </div>
+
+                        <div class="hadis-box" style="margin-top:20px; font-style:italic; font-size:13px; text-align:center;">
+                            "Dzahaba-zh-zhama’u wab-tallatil ‘uruuqu wa tsabatal ajru insyaa Allah."<br>
+                            <b>(Telah hilang rasa haus... dan semoga pahala ditetapkan)</b>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                area.innerHTML = "<div class='card'>Gagal mengambil jadwal. Pastikan koneksi internet aktif.</div>";
+            }
+        }, () => {
+            area.innerHTML = "<div class='card'>Akses lokasi ditolak. Gunakan pengaturan manual untuk jadwal.</div>";
+        });
+    }
+}
+
 </script>
 </body>
 </html>
