@@ -1,0 +1,21 @@
+name: alqurandigital
+description: "Aplikasi Al-Quran Digital "
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  http: ^1.1.0        # Penting untuk ambil data Al-Quran dari API
+  audioplayers: ^5.2.1 # Jika ingin ada fitur murrotal suara
+  shared_preferences: ^2.2.0 # Untuk fitur simpan ayat terakhir dibaca (bookmark)
+
+flutter:
+  uses-material-design: true
+  # Jika Anda punya file gambar/suara di folder assets, aktifkan ini:
+  # assets:
+  #   - assets/
